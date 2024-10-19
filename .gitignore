@@ -1,3 +1,18 @@
-**/venv
-DataStocks/*
+# Ignore virtual environment
+venv/
+
+# Ignore VSCode settings
+.vscode/
+
+# Ignore all CSV files
 *.csv
+
+# Ignore stock data directory
+/data/DataStocks/
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore Python cache files and __pycache__ folder
+__pycache__/
+*.pyc
