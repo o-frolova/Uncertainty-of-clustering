@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class MultivariateDistribution():
     """
     A class for generating random samples from multivariate probability distributions.

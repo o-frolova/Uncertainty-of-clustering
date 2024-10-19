@@ -1,10 +1,11 @@
 import networkx as nx
 import numpy as np
 import numpy.linalg as la
-from sklearn.cluster import KMeans
+from networkx.algorithms import tree
 from networkx.algorithms.community import louvain_communities
 from scipy.sparse import csgraph
-from networkx.algorithms import tree 
+from sklearn.cluster import KMeans
+
 
 class ClusteringMethods():
     """

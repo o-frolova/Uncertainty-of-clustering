@@ -1,7 +1,8 @@
-import pathlib
-import pandas as pd
 import logging
+import pathlib
 from typing import List, Tuple
+
+import pandas as pd
 
 from src.Stocks import Stocks
 

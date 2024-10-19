@@ -1,5 +1,5 @@
+import numpy as np
 from scipy import stats
-import numpy as np 
 
 
 class CorrelationMeasurement:
