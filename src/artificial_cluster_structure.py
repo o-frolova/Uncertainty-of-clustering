@@ -1,9 +1,11 @@
-from src.multivariate_distribution import MultivariateDistribution 
-from src.correlation import CorrelationMeasurement 
-from src.clustering_methods import ClusteringMethods
-import numpy as np 
+import numpy as np
 
-class CorrelationBlockModel():
+from src.clustering_methods import ClusteringMethods
+from src.correlation import CorrelationMeasurement
+from src.multivariate_distribution import MultivariateDistribution
+
+
+class ArtificialСlusterStructure():
 
     def _generated_data(self,
                        multivariate_distribution: MultivariateDistribution,
