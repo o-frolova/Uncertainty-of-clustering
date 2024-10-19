@@ -1,161 +1,125 @@
-from typing import List, Tuple
-import os
-import pandas as pd
 import pathlib
+import pandas as pd
+import logging
+from typing import List, Tuple
+
 from src.Stocks import Stocks
 
-class ReaderStocksData():
+
+class ReaderStocksData:
+    """
+    A class to read and process stock data from CSV files.
+
+    Attributes:
+        path (pathlib.Path): The path to the directory containing stock data files.
+
+    Methods:
+        load_data(date_start: str, date_end: str) -> Tuple[List[Stocks], List[str]]:
+            Loads stock data from CSV files within the specified date range.
+        
+        _get_stocks_info(data) -> Tuple[List[float], List[float], List[str]]:
+            Extracts stock price, volume, and date information from the DataFrame.
+        
+        _same_length_of_returns(Stocks: List[Stocks]) -> List[Stocks]:
+            Trims the returns, dates, close prices, and volumes of the stocks 
+            to ensure they are of the same length.
+    """
+
     def __init__(self, path: pathlib.Path) -> None:
         """
-        Constructor for the ReaderStocksData class.
-        Parameters:
-        - path (str): The path to the directory containing stock data files.
+        Initializes the ReaderStocksData with the specified directory path.
+
+        Args:
+            path (pathlib.Path): The path to the directory containing stock data files.
         """
         self._path = path
 
     @property
     def path(self):
+        """
+        Returns the path to the stock data directory.
+
+        Returns:
+            pathlib.Path: The path to the directory containing stock data files.
+        """
         return self._path
 
-    def _get_stocks_info(self, data) -> Tuple[List, List, List]:
+    def _get_stocks_info(self, data) -> Tuple[List[float], List[float], List[str]]:
         """
-        Extracts stock information (price, volume, date) from the given DataFrame.
-        Parameters:
-        - data: DataFrame containing stock data.
+        Extracts stock information from the given DataFrame.
+
+        Args:
+            data (pd.DataFrame): DataFrame containing stock data.
+
         Returns:
-        - Tuple[List, List, List]: Extracted price, volume, and date lists.
+            Tuple[List[float], List[float], List[str]]: A tuple containing:
+                - List of stock closing prices as floats.
+                - List of stock volumes as floats.
+                - List of stock dates as strings.
         """
-        price, volume, date = [], [], []
-        date = list(data['Date'])
-        volume = list(data['Volume'])
-        price = list(data['Close'])
+        price = data['Close'].astype(float).tolist()
+        volume = data['Volume']
+        date = data['Date'].tolist()
         return price, volume, date
 
-    def _same_length_of_returns(self, Stocks: list) -> list:
+    def _same_length_of_returns(self, Stocks: List[Stocks]) -> List[Stocks]:
         """
-        Brings information on the returns of each asset to the same length
-        Parameters:
-        - Stocks (list): List of stock objects.
+        Trims the returns and associated data of stocks to the same length.
+
+        Args:
+            Stocks (List[Stocks]): A list of Stock objects.
+
         Returns:
-        - list: Updated list of stock objects with returns adjusted to the minimum length.
+            List[Stocks]: A list of Stock objects with trimmed returns and data.
         """
-
-        mimimum = float('inf')
+        minimum = min(len(stock.returns) for stock in Stocks)
         for stock in Stocks:
-            if len(stock.returns) < mimimum:
-                mimimum = len(stock.returns)
-        for stock in Stocks:
-            stock.returns = stock.returns[:mimimum - 1]
-            stock.dates = stock.dates[:mimimum - 1]
-            stock.close_prices = stock.close_prices[:mimimum - 1]
-            stock.volumes = stock.volumes[:mimimum - 1]
-
+            stock.returns = stock.returns[:minimum - 1]
+            stock.dates = stock.dates[:minimum - 1]
+            stock.close_prices = stock.close_prices[:minimum - 1]
+            stock.volumes = stock.volumes[:minimum - 1]
         return Stocks
 
-    def load_data(self, date_start: str, date_end:str) -> Tuple[List, List, List]:
+    def load_data(self, date_start: str, date_end: str) -> Tuple[List[Stocks], List[str]]:
         """
-        Loads stock data from files within the specified date range.
-        Parameters:
-        - date_start (str): Start date for loading stock data.
-        - date_end (str): End date for loading stock data.
+        Loads stock data from CSV files within the specified date range.
+
+        Args:
+            date_start (str): The start date in 'YYYY-MM-DD' format.
+            date_end (str): The end date in 'YYYY-MM-DD' format.
+
         Returns:
-        - Tuple[List, List, List]: Data for building the model, data for evaluation, and list of tickers.
+            Tuple[List[Stocks], List[str]]: A tuple containing:
+                - List of Stock objects for the specified date range.
+                - List of tickers corresponding to the loaded stock data.
         """
         TICKERS = []
         DATA_OF_STOCKS = []
 
         count = 0
-        for filename in os.listdir(self._path):
+        for filename in pathlib.Path(self._path).iterdir():
+            if filename.is_file():
+                try:
+                    data = pd.read_csv(filename)
+                    data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d", errors='coerce')
+                    data.dropna(subset=['Date'], inplace=True)
 
-            try:
-                f = os.path.join(self._path, filename)
-                if os.path.isfile(f):
+                    # Filter directly using datetime objects
+                    filtered_data = data[(data['Date'] >= date_start) & (data['Date'] <= date_end)]
 
-                    price, volume, date = [], [], []
-                    data = pd.read_csv(f)
+                    if filtered_data.empty:
+                        continue
 
-                    data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
-                    info_for_exp = data.loc[(date_start <= data['Date']) & (data['Date'] <= date_end) ] 
-
-                    price, volume, date = self._get_stocks_info(info_for_exp)
-                    price = price[::-1]
-                    volume = volume[::-1]
-                    date = date[::-1]
-
-                    DATA_OF_STOCKS.append(Stocks(count, filename[:-4], price, volume, date))
-
+                    price, volume, date = self._get_stocks_info(filtered_data)
+                    DATA_OF_STOCKS.append(Stocks(count, filename.stem, price[::-1], volume[::-1], date[::-1]))
                     count += 1
-            except:
-                continue
+
+                except Exception as e:
+                    logging.error(f"Error processing file {filename}: {e}")
+                    continue
 
         for stock in DATA_OF_STOCKS:
-                TICKERS.append(stock.ticker)
+            TICKERS.append(stock.ticker)
 
         DATA_OF_STOCKS = self._same_length_of_returns(DATA_OF_STOCKS)
-
         return DATA_OF_STOCKS, TICKERS
-
-
-# class ReaderStocksDatayfinance():
-#     def __init__(self, path:str) -> None:
-#         """
-#         Constructor for the ReaderStocksData class.
-#         Parameters:
-#         - path (str): The path to the directory containing stock data files.
-#         """
-#         self.__path = path
-
-#     @property
-#     def path(self):
-#         return self.__path
-
-#     def __same_length_of_returns(self, Stocks: list) -> list:
-#         """
-#         Brings information on the returns of each asset to the same length
-#         Parameters:
-#         - Stocks (list): List of stock objects.
-#         Returns:
-#         - list: Updated list of stock objects with returns adjusted to the minimum length.
-#         """
-#         mimimum = float('inf')
-#         for stock in Stocks:
-#             if len(stock.returns) < mimimum:
-#                 mimimum = len(stock.returns)
-#         for stock in Stocks:
-#             stock.returns = stock.returns[:mimimum - 1]
-#             stock.dates = stock.dates[:mimimum - 1]
-#             stock.close_prices = stock.close_prices[:mimimum - 1]
-#             stock.volumes = stock.volumes[:mimimum - 1]
-
-#         return Stocks
-
-#     def load_data(self, date_start: str, date_end:str) -> Tuple[List, List, List]:
-#         """
-#         Loads stock data from files within the specified date range.
-#         Parameters:
-#         - date_start (str): Start date for loading stock data.
-#         - date_end (str): End date for loading stock data.
-#         Returns:
-#         - Tuple[List, List, List]: Data for building the model, data for evaluation, and list of tickers.
-#         """
-#         TICKERS = []
-#         DATA_OF_STOCKS = []
-#         count = 0
-#         for filename in os.listdir(self.__path):
-#             try:
-#                 f = os.path.join(self.__path, filename)
-#                 if os.path.isfile(f):
-#                     data = pd.read_csv(f)
-#                     DATA_OF_STOCKS.append(Stocks(count, filename[:-4], list(data['Close']), list(data['Volume']),  data['Date']))
-#                     count += 1
-#             except:
-#                 continue
-
-#         for stock in DATA_OF_STOCKS:
-#                 TICKERS.append(stock.ticker)
-
-
-#         DATA_OF_STOCKS = self.__same_length_of_returns(DATA_OF_STOCKS)
-
-#         return DATA_OF_STOCKS.copy(), TICKERS.copy()
-    

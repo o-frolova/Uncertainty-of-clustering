@@ -1,28 +1,58 @@
 import pandas as pd
 import numpy as np
+from typing import List
+
 
 class Stocks():
     """
-    A class representing stock data.
+    A class representing stock data for financial analysis.
+
+    This class encapsulates the essential attributes of a stock, including its ID, ticker symbol,
+    closing prices, volumes, dates, and calculated returns. It provides methods for accessing and 
+    manipulating this data, enabling efficient financial analysis and modeling.
+
+    Attributes:
+        id_ (int): The unique identifier for the stock.
+        ticker (str): The ticker symbol of the stock.
+        close_prices (list): A list of closing prices for the stock over time.
+        volumes (list): A list of trading volumes for the stock over time.
+        dates (list): A list of dates corresponding to the closing prices and volumes.
+        returns (pd.Series): A pandas Series containing the calculated returns based on closing prices.
+        weight_cluster (pd.Series): A pandas Series representing the weight of the stock in a specific cluster.
+
+    Methods:
+        _get_returns() -> pd.Series:
+            Calculates the non-logarithmic returns based on closing prices.
+
+        id_:
+            Gets or sets the stock ID.
+        
+        ticker:
+            Gets the stock ticker.
+        
+        close_prices:
+            Gets or sets the list of closing prices.
+        
+        volumes:
+            Gets or sets the list of trading volumes.
+        
+        dates:
+            Gets or sets the list of dates.
+        
+        returns:
+            Gets or sets the calculated stock returns.
+        
+        weight_cluster:
+            Gets or sets the stock weight in a cluster.
     """
-    def __init__(
-            self,
-            id_stock: int,
-            ticker: str,
-            close_prices: list = None,
-            volumes: list = None,
-            dates: list = None
-    ) -> None:
-        """
-        Initialize a Stocks instance with specified attributes.
-        """
+    def __init__(self, id_stock: int, ticker: str, close_prices: List[float] = None, 
+                 volumes: List[float] = None, dates: List[str] = None) -> None:
         self._id_ = id_stock
         self._ticker = ticker
         self._close_prices = close_prices if close_prices is not None else []
         self._volumes = volumes if volumes is not None else []
         self._dates = dates if dates is not None else []
-        self._returns = self.__get_returns()
-        self._weight_cluster = {'single': None,'complete': None, 'average': None, 'ward': None, 'DBHT': None}
+        self._returns = self._get_returns()
         self._returns_temp = []
 
     @property
@@ -74,16 +104,15 @@ class Stocks():
         """
         return self._weight_cluster
 
-    def __get_returns(self) -> pd.Series:
+    def _get_returns(self) -> pd.Series:
         """
-        Calculating the non-logarithmic return on an stock.
+        Calculate non-logarithmic returns for the stock.
         """
-        if self._close_prices:
+        if len(self._close_prices) > 1:
             returns = pd.Series(self._close_prices).pct_change()
             returns.iloc[0] = 0
             return np.log(1 + returns)
-        else:
-            return []
+        return pd.Series([])
 
     @returns.setter
     def returns(self, returns_):
