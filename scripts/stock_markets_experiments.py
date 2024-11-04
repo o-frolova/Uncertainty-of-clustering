@@ -120,9 +120,9 @@ def stock_markets_experiments(args):
         print(combination_name)
 
         correlation_matrix = []
-        for stock_1 in Stocks:
+        for stock_1 in DATA_OF_STOCKS:
             row = []
-            for stock_2 in Stocks:
+            for stock_2 in DATA_OF_STOCKS:
                 row.append(combination['correlation_network'](data_1 = stock_1.returns, data_2 = stock_2.returns))
             correlation_matrix.append(row)
         true_labels = combination['clustering_method'](np.array(correlation_matrix), combination['number_clusters'])

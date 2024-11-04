@@ -13,7 +13,7 @@ NUMBER_STOCKS=60
 NUMBER_REPETITIONS=100
 
 echo "Running experiment..."
-python scripts/stock_markets_experiment.py \
+python scripts/stock_markets_experiments.py \
   --start-date ${START_DATE} \
   --end-date ${END_DATE} \
   --path-to-data ${PATH_TO_DATA} \
