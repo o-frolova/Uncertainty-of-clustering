@@ -68,7 +68,7 @@ def correlation_block_model_experiments(args):
     combinations, combinations_name = get_combinations()
 
     for combination, combination_name in tqdm(zip(combinations, combinations_name), leave=False):
-        print('=======', combination_name)
+        print(combination_name)
         
         cbm = CorrelationBlockModel(
             num_clusters = combination['number_clusters'],
@@ -93,4 +93,10 @@ def correlation_block_model_experiments(args):
             ari_score_results.append(result_score)
         combination_name['ARI'] = np.mean(ari_score_results)
         results_experiments = results_experiments._append(pd.Series(combination_name), ignore_index=True)
+    results_experiments.to_csv(args.path_to_save + args.name_common_file)
+
+if __name__ == "__main__":
+    seed_all()
+    ARGS = CustomParser(underscores_to_dashes = True).parse_args()
+    correlation_block_model_experiments(ARGS)
             
