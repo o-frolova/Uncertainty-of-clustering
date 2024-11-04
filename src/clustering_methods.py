@@ -68,9 +68,20 @@ class ClusteringMethods():
         np.array
             An array of community labels for each node in the graph.
         """
+        target_clusters = number_clusters
+        resolution_ = 0.1
         graph = nx.from_numpy_array(adj_matrix)
-        result_communities = np.array(louvain_communities(graph))
+
+        while resolution_ <= target_clusters:
+            result_communities = np.array(louvain_communities(graph, resolution=resolution_))
+            num_clusters = set(self._get_community_labels(graph.number_of_nodes(), result_communities))
+            if len(num_clusters) == target_clusters:
+                return self._get_community_labels(graph.number_of_nodes(), result_communities)
+            else:
+                resolution_ += 0.01
+        
         return self._get_community_labels(graph.number_of_nodes(), result_communities)
+
 
     def normalized_spectral_clustering(self, adj_matrix: np.array, num_clusters: int) -> np.array:
         """
