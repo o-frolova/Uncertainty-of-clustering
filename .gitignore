@@ -8,7 +8,7 @@ venv/
 *.csv
 
 # Ignore stock data directory
-/data/DataStocks/
+/data
 
 # Ignore macOS system files
 .DS_Store
