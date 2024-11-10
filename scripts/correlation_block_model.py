@@ -93,7 +93,7 @@ def correlation_block_model_experiments(args):
             ari_score_results.append(result_score)
         combination_name['ARI'] = np.mean(ari_score_results)
         results_experiments = results_experiments._append(pd.Series(combination_name), ignore_index=True)
-    results_experiments.to_csv(args.path_to_save + args.name_common_file)
+    results_experiments.to_csv(args.path_to_save / args.name_common_file)
 
 if __name__ == "__main__":
     seed_all()
