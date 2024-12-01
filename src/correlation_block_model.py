@@ -121,4 +121,6 @@ class CorrelationBlockModel:
         correlation_block_model['correlation_matrix'] = self._get_correlation_matrix(covariance_matrix)
         correlation_block_model['mean_vector'] = self._get_mean_vectors()
         correlation_block_model['labels'] = self._get_community_labels()
+        correlation_block_model['true_num_clusters'] = self.num_clusters
         return correlation_block_model
+    
