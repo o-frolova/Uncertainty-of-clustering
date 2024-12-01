@@ -50,7 +50,7 @@ def one_experiment(
 ) -> float:
    
    artificial_cluster_structure = ArtificialСlusterStructure()
-   gen_labels_ = artificial_cluster_structure.clustering(
+   num_clusters, gen_labels_ = artificial_cluster_structure.clustering(
       multivariate_distribution = multivariate_distribution,
       mean_vector = true_mean_vec,
       cov_matrix = true_cov_matrix,
@@ -60,7 +60,7 @@ def one_experiment(
       number_clusters = number_clusters
    )
 
-   return adjusted_rand_score(true_labels, gen_labels_)
+   return num_clusters, adjusted_rand_score(true_labels, gen_labels_)
 
 
 def correlation_block_model_experiments(args):
@@ -79,8 +79,9 @@ def correlation_block_model_experiments(args):
         cbm = cbm.create_correlation_block_model()
 
         ari_score_results = []
+        cluster_distribution = []
         for _ in range(args.number_repetitions):
-            result_score = one_experiment(
+            num_clusters, result_score = one_experiment(
                 cluster_method = combination['clustering_method'],
                 correlation_method = combination['correlation_network'],
                 multivariate_distribution = combination['multivariate_distribution'],
@@ -91,7 +92,9 @@ def correlation_block_model_experiments(args):
                 true_labels = cbm['labels']
             )
             ari_score_results.append(result_score)
+            cluster_distribution.append(num_clusters)
         combination_name['ARI'] = np.mean(ari_score_results)
+        combination_name['cluster_distribution'] = (cbm['true_num_clusters'], cluster_distribution)
         results_experiments = results_experiments._append(pd.Series(combination_name), ignore_index=True)
     results_experiments.to_csv(args.path_to_save / args.name_common_file)
 
