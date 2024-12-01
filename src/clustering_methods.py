@@ -68,19 +68,12 @@ class ClusteringMethods():
         np.array
             An array of community labels for each node in the graph.
         """
-        target_clusters = number_clusters
-        resolution_ = 0.1
-        graph = nx.from_numpy_array(adj_matrix)
 
-        while resolution_ <= target_clusters:
-            result_communities = np.array(louvain_communities(graph, resolution=resolution_))
-            num_clusters = set(self._get_community_labels(graph.number_of_nodes(), result_communities))
-            if len(num_clusters) == target_clusters:
-                return self._get_community_labels(graph.number_of_nodes(), result_communities)
-            else:
-                resolution_ += 0.01
-        
-        return self._get_community_labels(graph.number_of_nodes(), result_communities)
+        graph = nx.from_numpy_array(adj_matrix)
+        result_communities = np.array(louvain_communities(graph))
+        num_clusters = len(set(self._get_community_labels(graph.number_of_nodes(), result_communities)))
+            
+        return num_clusters, self._get_community_labels(graph.number_of_nodes(), result_communities)
 
 
     def normalized_spectral_clustering(self, adj_matrix: np.array, num_clusters: int) -> np.array:
@@ -102,7 +95,7 @@ class ClusteringMethods():
         l, U = la.eigh(csgraph.laplacian(adj_matrix, normed=True))
         kmeans = KMeans(n_clusters=num_clusters).fit(U[:,1:num_clusters]) 
         labels_ = kmeans.labels_
-        return labels_
+        return num_clusters, labels_
 
     def spectral_clustering(self, adj_matrix: np.array, num_clusters: int) -> np.array: 
         """
@@ -125,7 +118,7 @@ class ClusteringMethods():
         _, U = la.eigh(L)
         kmeans = KMeans(n_clusters=num_clusters).fit(U[:,1:num_clusters])
         labels_ = kmeans.labels_
-        return labels_
+        return num_clusters, labels_
 
     def single_clustering(self, adj_matrix: np.array, num_clusters: int) -> np.array:
         """
@@ -143,11 +136,30 @@ class ClusteringMethods():
         np.array
             An array of cluster labels for each node based on the maximum spanning tree.
         """
-        graph = nx.from_numpy_array(adj_matrix)
-        mst_graph = self._get_maximum_spanning_tree(graph)
-        cutted_mst = self._cut_edges(mst_graph, num_clusters)
-        result_communities = list(nx.connected_components(cutted_mst))
-        return self._get_community_labels(graph.number_of_nodes(), result_communities)
+        # graph = nx.from_numpy_array(adj_matrix)
+        # mst_graph = self._get_maximum_spanning_tree(graph)
+        # cutted_mst = self._cut_edges(mst_graph, num_clusters)
+        # result_communities = list(nx.connected_components(cutted_mst))
+        # return num_clusters, self._get_community_labels(graph.number_of_nodes(), result_communities)
+        
+        # from sklearn.cluster import AgglomerativeClustering
+        # clustering = AgglomerativeClustering(linkage ='single', n_clusters = num_clusters).fit(adj_matrix)
+        # return num_clusters, clustering.labels_
+    
+        G = nx.from_numpy_array(adj_matrix)
+        mst = tree.maximum_spanning_edges(G, algorithm="kruskal")
+        edgelist = list(mst)
+        edgelist.sort(key=lambda tup: tup[2]['weight'])
+        cutted_mst = nx.from_edgelist(edgelist)
+        to_cut = edgelist[0:num_clusters - 1] 
+        cutted_mst.remove_edges_from(to_cut)
+
+        cc = list(nx.connected_components(cutted_mst))
+        labels_ = np.zeros(cutted_mst.number_of_nodes(), dtype=int)
+        for k, comm in enumerate(cc):
+            for label in comm: 
+                labels_[label] = k
+        return num_clusters, labels_
 
     def _get_maximum_spanning_tree(self, graph: nx.Graph) -> nx.Graph:
         """
