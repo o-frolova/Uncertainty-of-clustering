@@ -21,13 +21,13 @@ def seed_all(seed: int = 123):
     os.environ['PYTHONHASHSEED'] = str(seed)
 
 class CustomParser(Tap):
-    start_date: str
-    end_date: str
-    path_to_data: pathlib.Path
-    path_to_save: pathlib.Path
-    name_common_file: str
-    number_stocks: int
-    number_repetitions: int
+    start_date: str = "2016-01-01"
+    end_date: str = "2018-12-31"
+    path_to_data: pathlib.Path = "./data/DataStocks/SP100"
+    path_to_save: pathlib.Path = "./data/results/SP100_60_stocks_10_rep/"
+    name_common_file: str = "SP100_60_stocks_all_results_5_rep_test_2.csv"
+    number_stocks: int = 20
+    number_repetitions: int = 5
 
 def load_data(args):
     ReaderData = ReaderStocksData(args.path_to_data)
@@ -95,7 +95,7 @@ def one_experiment(
       true_labels
 ) -> float:
    artificial_cluster_structure = ArtificialСlusterStructure()
-   gen_labels_ = artificial_cluster_structure.clustering(
+   num_clusters, gen_labels_ = artificial_cluster_structure.clustering(
       multivariate_distribution = multivariate_distribution,
       mean_vector = true_mean_vec,
       cov_matrix = true_cov_matrix,
@@ -105,7 +105,7 @@ def one_experiment(
       number_clusters = number_clusters
    )
 
-   return adjusted_rand_score(true_labels, gen_labels_)
+   return num_clusters, adjusted_rand_score(true_labels, gen_labels_)
     
 def stock_markets_experiments(args):
 
@@ -125,11 +125,12 @@ def stock_markets_experiments(args):
             for stock_2 in DATA_OF_STOCKS:
                 row.append(combination['correlation_network'](data_1 = stock_1.returns, data_2 = stock_2.returns))
             correlation_matrix.append(row)
-        true_labels = combination['clustering_method'](np.array(correlation_matrix), combination['number_clusters'])
+        true_num_clusters, true_labels = combination['clustering_method'](np.array(correlation_matrix), combination['number_clusters'])
 
         ari_score_results = []
+        cluster_distribution = []
         for _ in range(args.number_repetitions):
-            result_score = one_experiment(
+            num_clusters, result_score = one_experiment(
                 cluster_method = combination['clustering_method'],
                 correlation_method = combination['correlation_network'],
                 multivariate_distribution = combination['multivariate_distribution'],
@@ -140,7 +141,9 @@ def stock_markets_experiments(args):
                 true_labels = true_labels
             )
             ari_score_results.append(result_score)
+            cluster_distribution.append(num_clusters)
         combination_name['ARI'] = np.mean(ari_score_results)
+        combination_name['cluster_distribution'] = (true_num_clusters, cluster_distribution)
         results_experiments = results_experiments._append(pd.Series(combination_name), ignore_index=True)
     results_experiments.to_csv(args.path_to_save / args.name_common_file)
             
