@@ -112,7 +112,7 @@ class ReaderStocksData:
                         continue
 
                     price, volume, date = self._get_stocks_info(filtered_data)
-                    DATA_OF_STOCKS.append(Stocks(count, filename.stem, price[::-1], volume[::-1], date[::-1]))
+                    DATA_OF_STOCKS.append(Stocks(count, filename.stem, price, volume, date))
                     count += 1
 
                 except Exception as e:
