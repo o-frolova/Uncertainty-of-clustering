@@ -85,7 +85,14 @@ class CorrelationMeasurement:
         float
             The absolute value of Fechner correlation coefficient, based on sign comparison
             of the deviations of the data sets from their means.
-        """
-        data_1_div = data_1 - np.mean(data_1)
-        data_2_div = data_2 - np.mean(data_2)
-        return abs(np.sum(np.sign(data_1_div * data_2_div)) / data_1.shape[0])
+        """        
+        data_1_diff = data_1 - np.mean(data_1)
+        data_2_diff = data_2 - np.mean(data_2)
+
+        data_1_diff = data_1_diff[data_1_diff != 0]
+        data_2_diff = data_2_diff[data_2_diff != 0]
+
+        n_plus = np.sum(np.sign(data_1_diff) == np.sign(data_2_diff))
+        n_minus = np.sum(np.sign(data_1_diff) != np.sign(data_2_diff))
+        
+        return abs((n_plus - n_minus) / (n_plus + n_minus))
