@@ -23,7 +23,7 @@ def seed_all(seed: int = 123):
 class CustomParser(Tap):
     start_date: str = "2016-01-01"
     end_date: str = "2018-12-31"
-    path_to_data: pathlib.Path = "./data/DataStocks/SP100"
+    path_to_data: pathlib.Path = "./data/DataStocks/SP100_1619"
     path_to_save: pathlib.Path = "./data/results/SP100_60_stocks_10_rep/"
     name_common_file: str = "SP100_60_stocks_all_results_5_rep_test_2.csv"
     number_stocks: int = 20
@@ -74,7 +74,7 @@ def get_mean_vector(Stocks: Stocks) -> np.array:
         mean_vector.append(stock.returns.mean())
     return np.array(mean_vector)
 
-def get_combinations():
+def get_combinations() -> tuple[list[dict], list[dict]]:
     keys, values = zip(*PARAMS.items())
     combinations = [dict(zip(keys, combination)) for combination in itertools.product(*values)]
 

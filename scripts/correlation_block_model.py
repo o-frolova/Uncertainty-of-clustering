@@ -28,7 +28,7 @@ class CustomParser(Tap):
     r_out: float
 
 
-def get_combinations():
+def get_combinations() -> tuple[list[dict], list[dict]]:
     keys, values = zip(*PARAMS.items())
     combinations = [dict(zip(keys, combination)) for combination in itertools.product(*values)]
 
