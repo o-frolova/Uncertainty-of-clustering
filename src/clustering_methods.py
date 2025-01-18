@@ -180,54 +180,12 @@ class ClusteringMethods():
         np.array
             An array of cluster labels for each node based on the maximum spanning tree.
         """
-        # graph = nx.from_numpy_array(adj_matrix)
-        # mst_graph = self._get_maximum_spanning_tree(graph)
-        # cutted_mst = self._cut_edges(mst_graph, num_clusters)
-        # result_communities = list(nx.connected_components(cutted_mst))
-        # return num_clusters, self._get_community_labels(graph.number_of_nodes(), result_communities)
+        graph = nx.from_numpy_array(adj_matrix)
+        mst_graph = self._get_maximum_spanning_tree(graph)
+        cutted_mst = self._cut_edges(mst_graph, num_clusters)
+        result_communities = list(nx.connected_components(cutted_mst))
+        return num_clusters, self._get_community_labels(graph.number_of_nodes(), result_communities)
         
-        # from sklearn.cluster import AgglomerativeClustering
-        # clustering = AgglomerativeClustering(linkage ='single', n_clusters = num_clusters).fit(adj_matrix)
-        # return num_clusters, clustering.labels_
-    
-        # G = nx.from_numpy_array(adj_matrix)
-        # mst = tree.maximum_spanning_edges(G, algorithm="kruskal")
-        # edgelist = list(mst)
-        # edgelist.sort(key=lambda tup: tup[2]['weight'])
-        # cutted_mst = nx.from_edgelist(edgelist)
-        # to_cut = edgelist[0:num_clusters - 1] 
-        # cutted_mst.remove_edges_from(to_cut)
-
-        # cc = list(nx.connected_components(cutted_mst))
-        # labels_ = np.zeros(cutted_mst.number_of_nodes(), dtype=int)
-        # for k, comm in enumerate(cc):
-        #     for label in comm: 
-        #         labels_[label] = k
-        # return num_clusters, labels_
-
-
-            # Построение графа из матрицы смежности
-        G = nx.from_numpy_array(adj_matrix)
-        
-        # Нахождение максимального остовного дерева (MST)
-        mst_edges = tree.maximum_spanning_edges(G, algorithm="kruskal", data=True)
-        edgelist = list(mst_edges)
-
-        # Сортировка ребер MST по убыванию веса
-        edgelist.sort(key=lambda tup: tup[2]['weight'], reverse=True)
-
-        # Удаление (num_clusters - 1) самых тяжелых ребер
-        to_cut = edgelist[:num_clusters - 1]
-        mst_graph = nx.Graph(edgelist)  # Восстановление графа из списка ребер
-        mst_graph.remove_edges_from([edge[:2] for edge in to_cut])
-
-        # Получение меток кластеров из связных компонент
-        communities = list(nx.connected_components(mst_graph))
-        labels = np.zeros(mst_graph.number_of_nodes(), dtype=int)
-        for cluster_idx, community in enumerate(communities):
-            for node in community:
-                labels[node] = cluster_idx
-        return num_clusters, labels
 
     def _get_maximum_spanning_tree(self, graph: nx.Graph) -> nx.Graph:
         """
@@ -243,8 +201,8 @@ class ClusteringMethods():
         nx.Graph
             The maximum spanning tree of the input graph.
         """
-        mst_edges = tree.maximum_spanning_edges(graph, algorithm="kruskal", data=True)
-        return nx.from_edgelist(mst_edges)
+        mst_edges = tree.maximum_spanning_edges(graph, algorithm="kruskal")
+        return mst_edges
 
     def _cut_edges(self, mst_graph: nx.Graph, num_clusters: int) -> nx.Graph:
         """
@@ -262,11 +220,9 @@ class ClusteringMethods():
         nx.Graph
             The graph after edges have been cut.
         """
-        edges = list(mst_graph.edges(data=True))
-        edges.sort(key=lambda edge: edge[2]['weight'], reverse=True)  # Sort edges by weight (descending)
-        
+        edges = list(mst_graph)
+        edges.sort(key=lambda edge: edge[2]['weight'])  # Sort edges by weight (descending)
+        cutted_mst = nx.from_edgelist(edges)
         edges_to_cut = edges[:num_clusters - 1]  # Keep num_clusters - 1 edges
-        cutted_mst = mst_graph.copy()
         cutted_mst.remove_edges_from(edges_to_cut)
-        
         return cutted_mst
