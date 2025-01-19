@@ -105,11 +105,6 @@ class ClusteringMethods():
         np.array
             An array of cluster labels for each node.
         """
-        # l, U = la.eigh(csgraph.laplacian(adj_matrix, normed=True))
-        # kmeans = KMeans(n_clusters=num_clusters).fit(U[:,1:num_clusters]) 
-        # labels_ = kmeans.labels_
-        # return num_clusters, labels_
-    
         if not (isinstance(num_clusters, int) and num_clusters > 0):
             raise ValueError("num_clusters must be a positive integer.")
         if adj_matrix.shape[0] != adj_matrix.shape[1]:
@@ -140,13 +135,7 @@ class ClusteringMethods():
         np.array
             An array of cluster labels for each node.
         """
-        # D = np.diag(np.ravel(np.sum(adj_matrix,axis=1)))
-        # L = D - adj_matrix
-        # _, U = la.eigh(L)
-        # kmeans = KMeans(n_clusters=num_clusters).fit(U[:,1:num_clusters])
-        # labels_ = kmeans.labels_
-        # return num_clusters, labels_
-    
+
         if adj_matrix.shape[0] != adj_matrix.shape[1]:
             raise ValueError("adj_matrix must be a square matrix.")
         if not np.allclose(adj_matrix, adj_matrix.T):
@@ -221,8 +210,8 @@ class ClusteringMethods():
             The graph after edges have been cut.
         """
         edges = list(mst_graph)
-        edges.sort(key=lambda edge: edge[2]['weight'])  # Sort edges by weight (descending)
+        edges.sort(key=lambda edge: edge[2]['weight'])
         cutted_mst = nx.from_edgelist(edges)
-        edges_to_cut = edges[:num_clusters - 1]  # Keep num_clusters - 1 edges
+        edges_to_cut = edges[:num_clusters - 1]
         cutted_mst.remove_edges_from(edges_to_cut)
         return cutted_mst
