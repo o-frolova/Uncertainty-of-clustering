@@ -14,5 +14,7 @@ venv/
 .DS_Store
 
 # Ignore Python cache files and __pycache__ folder
-src/__pycache__/*
+*/__pycache__/
 *.pyc
+*.pyo
+
