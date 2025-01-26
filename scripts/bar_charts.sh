@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -ex
+
 FOLDER_PATH=./data/diff_student
 CORRELATION_NETWORK='Pearson'
 MULTIVARIATE_DISTRIBUTION='student_distribution'

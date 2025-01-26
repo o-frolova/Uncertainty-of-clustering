@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -ex
+
 FOLDER_PATH=./data/cbm_100_18_01_25
 CORRELATION_NETWORK='Pearson'
 MULTIVARIATE_DISTRIBUTION='student_distribution'
