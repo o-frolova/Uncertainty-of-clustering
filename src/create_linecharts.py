@@ -1,10 +1,12 @@
 import os
 import pathlib
-import pandas as pd
+from typing import List
+
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from tap import Tap
-from typing import List
+
 
 class CustomParser(Tap):
     folder_path: pathlib.Path
@@ -15,6 +17,7 @@ class CustomParser(Tap):
     save_path: pathlib.Path
     max_r_out: float
     step: float
+
 
 class LineGraphDrawer:
     def __init__(self, args: Tap):
@@ -37,23 +40,31 @@ class LineGraphDrawer:
 
     def extractor_scores(self) -> dict:
         clustering_methods = [
-            'single_clustering',
-            'louvain_clustering',
-            'spectral_clustering',
-            'normalized_spectral_clustering'
+            "single_clustering",
+            "louvain_clustering",
+            "spectral_clustering",
+            "normalized_spectral_clustering",
         ]
         scores = {method: [] for method in clustering_methods}
-        
+
         for file in self.files:
             df = pd.read_csv(file)
             for method in clustering_methods:
-                df_filtered = df[(df['clustering_method'] == method) &
-                                 (df['correlation_network'] == self.correlation_network) &
-                                 (df['multivariate_distribution'] == self.multivariate_distribution) &
-                                 (df['sample_size_of_observations'] == self.sample_size_of_observations) &
-                                 (df['number_clusters'] == self.number_clusters)]
+                df_filtered = df[
+                    (df["clustering_method"] == method)
+                    & (df["correlation_network"] == self.correlation_network)
+                    & (
+                        df["multivariate_distribution"]
+                        == self.multivariate_distribution
+                    )
+                    & (
+                        df["sample_size_of_observations"]
+                        == self.sample_size_of_observations
+                    )
+                    & (df["number_clusters"] == self.number_clusters)
+                ]
                 if not df_filtered.empty:
-                    scores[method].append(float(df_filtered['ARI']))
+                    scores[method].append(float(df_filtered["ARI"]))
                 else:
                     scores[method].append(0)  # Default value if no data matches
         return scores
@@ -63,21 +74,22 @@ class LineGraphDrawer:
         plt.figure(figsize=(10, 6))
 
         for method, scores in data.items():
-            plt.plot(r_out_values, scores, label=method, linestyle='-')
+            plt.plot(r_out_values, scores, label=method, linestyle="-")
 
-        plt.title('Dependence of Metric on r_out', fontsize=16)
-        plt.xlabel('r_out', fontsize=14)
-        plt.ylabel('Metric Value (ARI)', fontsize=14)
+        plt.title("Dependence of Metric on r_out", fontsize=16)
+        plt.xlabel("r_out", fontsize=14)
+        plt.ylabel("Metric Value (ARI)", fontsize=14)
         plt.legend(title="Clustering Methods", fontsize=12)
         plt.grid(alpha=0.5)
         plt.tight_layout()
 
         # Save plot
-        plt.savefig(self.save_path, format='png')
+        plt.savefig(self.save_path, format="png")
 
     def draw_graph(self):
         scores = self.extractor_scores()
         self.visual_iteration_r_out(scores)
+
 
 if __name__ == "__main__":
     ARGS = CustomParser(underscores_to_dashes=True).parse_args()

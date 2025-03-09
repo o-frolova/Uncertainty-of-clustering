@@ -17,12 +17,12 @@ class ReaderStocksData:
     Methods:
         load_data(date_start: str, date_end: str) -> Tuple[List[Stocks], List[str]]:
             Loads stock data from CSV files within the specified date range.
-        
+
         _get_stocks_info(data) -> Tuple[List[float], List[float], List[str]]:
             Extracts stock price, volume, and date information from the DataFrame.
-        
+
         _same_length_of_returns(Stocks: List[Stocks]) -> List[Stocks]:
-            Trims the returns, dates, close prices, and volumes of the stocks 
+            Trims the returns, dates, close prices, and volumes of the stocks
             to ensure they are of the same length.
     """
 
@@ -58,9 +58,9 @@ class ReaderStocksData:
                 - List of stock volumes as floats.
                 - List of stock dates as strings.
         """
-        price = data['Close'].astype(float).tolist()
-        volume = data['Volume']
-        date = data['Date'].tolist()
+        price = data["Close"].astype(float).tolist()
+        volume = data["Volume"]
+        date = data["Date"].tolist()
         return price, volume, date
 
     def _same_length_of_returns(self, Stocks: List[Stocks]) -> List[Stocks]:
@@ -75,13 +75,15 @@ class ReaderStocksData:
         """
         minimum = min(len(stock.returns) for stock in Stocks)
         for stock in Stocks:
-            stock.returns = stock.returns[:minimum - 1]
-            stock.dates = stock.dates[:minimum - 1]
-            stock.close_prices = stock.close_prices[:minimum - 1]
-            stock.volumes = stock.volumes[:minimum - 1]
+            stock.returns = stock.returns[: minimum - 1]
+            stock.dates = stock.dates[: minimum - 1]
+            stock.close_prices = stock.close_prices[: minimum - 1]
+            stock.volumes = stock.volumes[: minimum - 1]
         return Stocks
 
-    def load_data(self, date_start: str, date_end: str) -> Tuple[List[Stocks], List[str]]:
+    def load_data(
+        self, date_start: str, date_end: str
+    ) -> Tuple[List[Stocks], List[str]]:
         """
         Loads stock data from CSV files within the specified date range.
 
@@ -102,17 +104,23 @@ class ReaderStocksData:
             if filename.is_file():
                 try:
                     data = pd.read_csv(filename)
-                    data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d", errors='coerce')
-                    data.dropna(subset=['Date'], inplace=True)
+                    data["Date"] = pd.to_datetime(
+                        data["Date"], format="%Y-%m-%d", errors="coerce"
+                    )
+                    data.dropna(subset=["Date"], inplace=True)
 
                     # Filter directly using datetime objects
-                    filtered_data = data[(data['Date'] >= date_start) & (data['Date'] <= date_end)]
+                    filtered_data = data[
+                        (data["Date"] >= date_start) & (data["Date"] <= date_end)
+                    ]
 
                     if filtered_data.empty:
                         continue
 
                     price, volume, date = self._get_stocks_info(filtered_data)
-                    DATA_OF_STOCKS.append(Stocks(count, filename.stem, price, volume, date))
+                    DATA_OF_STOCKS.append(
+                        Stocks(count, filename.stem, price, volume, date)
+                    )
                     count += 1
 
                 except Exception as e:

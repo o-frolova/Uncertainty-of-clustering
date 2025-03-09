@@ -4,12 +4,12 @@ import numpy as np
 import pandas as pd
 
 
-class Stocks():
+class Stocks:
     """
     A class representing stock data for financial analysis.
 
     This class encapsulates the essential attributes of a stock, including its ID, ticker symbol,
-    closing prices, volumes, dates, and calculated returns. It provides methods for accessing and 
+    closing prices, volumes, dates, and calculated returns. It provides methods for accessing and
     manipulating this data, enabling efficient financial analysis and modeling.
 
     Attributes:
@@ -27,27 +27,34 @@ class Stocks():
 
         id_:
             Gets or sets the stock ID.
-        
+
         ticker:
             Gets the stock ticker.
-        
+
         close_prices:
             Gets or sets the list of closing prices.
-        
+
         volumes:
             Gets or sets the list of trading volumes.
-        
+
         dates:
             Gets or sets the list of dates.
-        
+
         returns:
             Gets or sets the calculated stock returns.
-        
+
         weight_cluster:
             Gets or sets the stock weight in a cluster.
     """
-    def __init__(self, id_stock: int, ticker: str, close_prices: List[float] = None, 
-                 volumes: List[float] = None, dates: List[str] = None) -> None:
+
+    def __init__(
+        self,
+        id_stock: int,
+        ticker: str,
+        close_prices: List[float] = None,
+        volumes: List[float] = None,
+        dates: List[str] = None,
+    ) -> None:
         self._id_ = id_stock
         self._ticker = ticker
         self._close_prices = close_prices if close_prices is not None else []
@@ -149,7 +156,7 @@ class Stocks():
         Set stock weight_cluster
         """
         self._weight_cluster = weight_cluster_
-    
+
     @id_.setter
     def id_(self, new_id):
         """
